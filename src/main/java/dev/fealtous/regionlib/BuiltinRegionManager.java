@@ -123,9 +123,12 @@ public class BuiltinRegionManager extends AbstractRegionManager<ResourceKey<Leve
         try {
             Path dirs = Files.createDirectories(loc).resolve(id + extn);;
             try {
-                Files.write(dirs, region.data(), StandardOpenOption.WRITE);
+                var opt = StandardOpenOption.WRITE;
+                if (!dirs.toFile().exists()) opt = StandardOpenOption.CREATE;
+                Files.write(dirs, region.data(), opt);
             } catch (IOException e) {
                 LogUtils.getLogger().error("Failed to save region with id: {}", id);
+                e.printStackTrace();
             }
         } catch (IOException e) {
             LogUtils.getLogger().error("Failed to create directory path for default regionlib save location. Here's why:");

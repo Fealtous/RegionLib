@@ -35,7 +35,6 @@ public record RegionSpec(int yByteOffset, int zByteOffset, int totalByte2n,
 
 
     public static RegionSpec createSpec(Size xSpecificity, Size ySpecificity, Size zSpecificity, Size xTracking, Size yTracking, Size zTracking) {
-        if (xTracking.ordinal() < 3 || yTracking.ordinal() < 3 || zTracking.ordinal() < 3) throw new IllegalStateException("Region tracking must be at least 8 units in all directions. (At minimum SPEC_8)");
         int totalByte2n = (xTracking.ordinal() + yTracking.ordinal() + zTracking.ordinal()) - 3; // -3 for bits per byte
         int yByteOffset = 1 << (xTracking.ordinal() - 3);
         int zByteOffset = yByteOffset << yTracking.ordinal();
@@ -48,7 +47,7 @@ public record RegionSpec(int yByteOffset, int zByteOffset, int totalByte2n,
     }
 
     private static int fastMod(Size tracking, Size spec) {
-        return 1 << (tracking.ordinal() + spec.ordinal()) - 1;
+        return (1 << (tracking.ordinal() + spec.ordinal())) - 1;
     }
 
     public long getSizeInBytes() {
