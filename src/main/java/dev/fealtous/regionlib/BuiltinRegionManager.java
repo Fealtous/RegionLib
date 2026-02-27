@@ -11,7 +11,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -47,9 +49,9 @@ public class BuiltinRegionManager extends AbstractRegionManager<ResourceKey<Leve
     }
 
     @Nullable
-    public Region get(@NotNull ServerLevel level, BlockPos pos, boolean abandonIfNotPresent) {
+    public Region get(@NonNull ServerLevel level, BlockPos pos, boolean abandonIfNotPresent) {
         var map = regionCache.get(level.dimension());
-        long id = Utils.defaultID(pos, spec);
+        long id = Locator.defaultLocator.locate(pos, spec);
         Region res = null;
         if (map != null) { // Does there exist a key for this dimension?
             res = map.get(id);
@@ -73,7 +75,7 @@ public class BuiltinRegionManager extends AbstractRegionManager<ResourceKey<Leve
     }
 
     public Region remove(ResourceKey<Level> dim, BlockPos pos, boolean andSave) {
-        long id = Utils.defaultID(pos, spec);
+        long id = Locator.defaultLocator.locate(pos, spec);
         var map = regionCache.get(dim);
         if (map == null) return null;
         Region res = map.remove(id);
@@ -109,10 +111,10 @@ public class BuiltinRegionManager extends AbstractRegionManager<ResourceKey<Leve
         Path loc = rootDir.resolve(defaultDirName).resolve(folder(discriminator)).resolve(id + extn);
         if (Files.exists(loc)) {
             try {
-                byte[] bytes = Files.readAllBytes(loc);
+                byte[] bytes = Files.readAllBytes(loc); // Be aware this will pause the main thread, so keeping files small is ideal.
                 return new Region(spec, bytes);
             } catch (IOException e) {
-                LogUtils.getLogger().error("Unable to read region with id: {} in dimension: {}. Null will be returned.", id, discriminator.location().getPath());
+                LogUtils.getLogger().error("Unable to read region with id: {} in dimension: {}. Null will be returned.", id, discriminator.identifier().getPath());
             }
         }
         return null;
@@ -137,6 +139,6 @@ public class BuiltinRegionManager extends AbstractRegionManager<ResourceKey<Leve
     }
 
     private String folder(ResourceKey<Level> disc) {
-        return disc.location().getPath();
+        return disc.identifier().getPath();
     }
 }
